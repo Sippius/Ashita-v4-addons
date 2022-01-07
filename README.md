@@ -1,5 +1,5 @@
 # Ashita-v4-addons
-FFXI Ashita-v4 addons
+Custom or converted addons for FFXI Ashita-v4
 
 find - v3 find by MalRD & zombie343 ported to v4. Updated slip data.
 
