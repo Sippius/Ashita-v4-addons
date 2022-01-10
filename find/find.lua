@@ -90,14 +90,14 @@ local function find(item, cleanString, useDescription)
     if (item == nil) then return false end;
     if (cleanString == nil) then return false end;
 
-    if (string.lower(item.Name[config.language]):find(cleanString)) then
+    if (string.lower(item.Name[config.language]):contains(cleanString)) then
         return true;
-    elseif (item.LogNameSingular[config.language] ~= nil and string.lower(item.LogNameSingular[config.language]):find(cleanString)) then
+    elseif (item.LogNameSingular[config.language] ~= nil and string.lower(item.LogNameSingular[config.language]):contains(cleanString)) then
         return true;
-    elseif (item.LogNamePlural[config.language] ~= nil and string.lower(item.LogNamePlural[config.language]):find(cleanString)) then
+    elseif (item.LogNamePlural[config.language] ~= nil and string.lower(item.LogNamePlural[config.language]):contains(cleanString)) then
         return true;
     elseif (useDescription and item.Description ~= nil and item.Description[config.language] ~= nil) then
-        return (string.lower(item.Description[config.language]):find(cleanString));
+        return (string.lower(item.Description[config.language]):contains(cleanString));
     end
 
     return false;
