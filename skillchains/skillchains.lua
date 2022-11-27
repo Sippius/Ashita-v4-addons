@@ -26,7 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]]
 
-addon.author = 'Ivaar';
+addon.author = 'Ivaar, sippius(v4)';
 addon.name = 'SkillChains';
 addon.version = '1.20.08.19';
 
