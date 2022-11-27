@@ -22,7 +22,7 @@
  *  DEALINGS IN THE SOFTWARE.
 ]]--
 
-addon.author   = 'MalRD, zombie343';
+addon.author   = 'MalRD, zombie343, sippius(v4)';
 addon.name     = 'Find';
 addon.version  = '3.1.0';
 
