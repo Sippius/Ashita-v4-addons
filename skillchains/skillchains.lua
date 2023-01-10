@@ -28,32 +28,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 addon.author = 'Ivaar, sippius(v4)';
 addon.name = 'SkillChains';
-addon.version = '1.20.08.19';
+addon.version = '1.20.08.19, 0.2(v4)';
 
 require 'common';
 --require 'timer';
 local skills = require('skills');
 local settings = require('settings');
 
-local jobs = T{'WAR','MNK','WHM','BLM','RDM','THF','PLD','DRK','BST','BRD','RNG','SAM','NIN','DRG','SMN','BLU','COR','PUP','DNC','SCH','GEO','RUN'};
+local jobs = {'WAR','MNK','WHM','BLM','RDM','THF','PLD','DRK','BST','BRD','RNG','SAM','NIN','DRG','SMN','BLU','COR','PUP','DNC','SCH','GEO','RUN'};
 
-local default = T{};
-default.Show = {burst=jobs, pet=T{'BST','SMN'}, props=jobs, spell=T{'SCH','BLU'}, step=jobs, timer=jobs, weapon=jobs};
+local default = {};
+default.Show = {burst=jobs, pet={'BST','SMN'}, props=jobs, spell={'SCH','BLU'}, step=jobs, timer=jobs, weapon=jobs};
 default.aeonic = false;
 default.color = false;
-default.display = T{};
+default.display = {};
 default.display.bg = true;
 default.display.bgcolor = math.d3dcolor(102, 0, 0, 0);
 default.display.color = math.d3dcolor(255,255,255,255);
 default.display.font = 'Consolas';
-default.display.pos = T{x=0,y=500};
+default.display.pos = {x=0,y=0};
 default.display.size = 10;
 
--- Skillchains Variables
-local sc = T{
-    zoning = false,
-    config = settings.load(default),
-};
+local config = settings.load(default);
 
 --[[
 * Updates the addon settings.
@@ -63,7 +59,7 @@ local sc = T{
 local function update_settings(s)
     -- Update the settings table..
     if (s ~= nil) then
-        sc.config = s;
+        config = s;
     end
 
     -- Save the current settings..
@@ -86,6 +82,10 @@ local message_ids = S{2,110,161,162,185,187,317,802};
 local pet_commands = S{110,317};
 local buff_dur = {[163]=40,[164]=30,[470]=60};
 local info = {member = {}};
+
+local setting = {}; -- job specific Show settings
+local resonating = {};
+local buffs = {};
 
 local colors = {};           -- Color codes by Sammeh
 colors.Light =         '|c0xFFFFFFFF|';
@@ -135,7 +135,7 @@ local sc_info = {
 
 ashita.events.register('unload', 'unload_cb', function()
     local display = AshitaCore:GetFontManager():Get('skill_props');
-    sc.config.display.pos = {x=display:GetPositionX(),y=display:GetPositionY() };
+    config.display.pos = {x=display:GetPositionX(),y=display:GetPositionY() };
     AshitaCore:GetFontManager():Delete('skill_props');
     settings.save();
 end);
@@ -147,8 +147,8 @@ end
 
 local function initialize()
     setting = {};
-    for k,v in pairs(sc.config.Show) do
-        setting[k] = S(sc.config.Show[k])[info.job];
+    for k,v in pairs(config.Show) do
+        setting[k] = S(config.Show[k])[info.job];
     end
     if setting.spell and info.job == 20 then
         info.abilities = skills[20];
@@ -158,14 +158,16 @@ end
 
 ashita.events.register('load', 'load_cb', function()
     skill_props = AshitaCore:GetFontManager():Create('skill_props');
-    skill_props:GetBackground():SetColor(sc.config.display.bgcolor);
-    skill_props:GetBackground():SetVisible(sc.config.display.bg);
-    skill_props:SetFontFamily(sc.config.display.font);
-    skill_props:SetFontHeight(sc.config.display.size);
-    skill_props:SetPositionX(sc.config.display.pos.x);
-    skill_props:SetPositionY(sc.config.display.pos.y);
-    --skill_props:SetVisibility(sc.config.visibility);
-    skill_props:SetColor(sc.config.display.color);
+    --skill_props:AshitaCore:GetFontManager():FontCreateFlags::ClearType;
+    --skill_props:SetCreateFlags('ClearType');
+    skill_props:GetBackground():SetColor(config.display.bgcolor);
+    skill_props:GetBackground():SetVisible(config.display.bg);
+    skill_props:SetFontFamily(config.display.font);
+    skill_props:SetFontHeight(config.display.size);
+    skill_props:SetPositionX(config.display.pos.x);
+    skill_props:SetPositionY(config.display.pos.y);
+    --skill_props:SetVisibility(config.visibility);
+    skill_props:SetColor(config.display.color);
 
     local player = AshitaCore:GetMemoryManager():GetPlayer();
     info.job = jobs[player:GetMainJob()];
@@ -210,7 +212,7 @@ local function aeonic_am(step)
 end
 
 local function aeonic_prop(ability, actor)
-    if not ability.aeonic or not info.aeonic and actor == info.player or not sc.config.aeonic and info.player ~= actor then
+    if not ability.aeonic or not info.aeonic and actor == info.player or not config.aeonic and info.player ~= actor then
         return ability.skillchain;
     end
     return {ability.skillchain[1], ability.skillchain[2], ability.aeonic};
@@ -239,7 +241,7 @@ local function add_skills(t, ability, active, aeonic)
         local lv, prop = check_props(active, aeonic_prop(ability[k], info.player));
         if prop then
             prop = aeonic and lv == 4 and sc_info[prop].aeonic[2] or prop;
-            tt[lv][#tt[lv]+1] = sc.config.color and
+            tt[lv][#tt[lv]+1] = config.color and
                 string.format('%-17s>> Lv.%d %s%-14s|r',ability[k].en, lv, colors[prop], prop) or
                 string.format('%-17s>> Lv.%d %-14s',ability[k].en, lv, prop);
         end
@@ -261,7 +263,7 @@ end
 
 local function colorize(t)
     local temp;
-    if sc.config.color then
+    if config.color then
         temp = {};
         for k=1,#t do
             temp[k] = string.format('%s%s|r',colors[t[k]], t[k]);
@@ -270,13 +272,7 @@ local function colorize(t)
     return table.concat(temp or t, ',');
 end
 
-ashita.events.register('d3d_endscene', 'endscene_cb', function(isRenderingBackBuffer)
-
-    -- isRenderingBackBuffer is a flag that will be true when the game is currently rendering to the back buffer.
-    -- Check for zoning..
-    if (not isRenderingBackBuffer or sc.zoning) then
-        return;
-    end
+ashita.events.register('d3d_present', 'present_cb', function()
 
     local targ_id = AshitaCore:GetMemoryManager():GetTarget():GetServerId(0);
     local now = os.time();
@@ -351,25 +347,10 @@ end
 
 ashita.events.register('packet_in', 'packet_in_cb', function(e)
 
-    -- Packet: Zone Leave
-    if (e.id == 0x000B) then
-        --print('packet_in - 0x000B'); --debug
-        sc.zoning = true;
-        return;
-    end
-
-    -- Packet: Inventory Update Completed
-    if (e.id == 0x001D) then
-        --print('packet_in - 0x001D'); --debug
-        sc.zoning = false;
-        return;
-    end
-
     if e.id == 0x0A then
         reset()
     -- Action
     elseif e.id == 0x28 then
-        --print('packet_in - 0x28'); --debug
         local actor = struct.unpack('I', e.data, 6);
         local category = ashita.bits.unpack_be(e.data_raw, 82, 4);
         local param = ashita.bits.unpack_be(e.data_raw, 86, 16);
@@ -406,26 +387,22 @@ ashita.events.register('packet_in', 'packet_in_cb', function(e)
         end
     -- Action Message
     elseif e.id == 0x29 and struct.unpack('H', e.data, 25) == 206 and struct.unpack('I', e.data, 9) == info.player then
-        --print('packet_in - 0x29'); --debug
         local effect = struct.unpack('H', e.data, 13)
         if buffs[info.player][effect] then
             buffs[info.player][effect] = nil;
         end
     -- Equip - Main
     elseif e.id == 0x50 and setting.weapon and e.data:byte(6) == 0 then
-        --print('packet_in - 0x50.0'); --debug
         info.main = e.data:byte(5);
         info.main_bag = e.data:byte(7);
         update_weapon();
     -- Equip - Range
     elseif e.id == 0x50 and e.data:byte(6) == 2 then
-        --print('packet_in - 0x50.2'); --debug
         info.range = e.data:byte(5);
         info.range_bag = e.data:byte(7);
         update_weapon();
     -- CP data
     elseif e.id == 0x63 and e.data:byte(5) == 9 then
-        --print('packet_in - 0x63'); --debug
         local set_buff = {};
         for n=1,32 do
             local buff = struct.unpack('H', e.data, n*2+7);
@@ -460,7 +437,6 @@ ashita.events.register('packet_in', 'packet_in_cb', function(e)
         end]]
     -- Character Abilities
     elseif e.id == 0x0AC and e.data:sub(5) ~= info.lastAC then
-        --print('packet_in - 0x0AC'); --debug
         if setting.weapon then
             info.weapon_skills = update_abilities(3, 1, 255, e.data:sub(5));
         end
@@ -470,7 +446,6 @@ ashita.events.register('packet_in', 'packet_in_cb', function(e)
         info.lastAC = e.data:sub(5);
     -- Pet Stat?
     elseif e.id == 0x44 and e.data:byte(5) == 0x10 and e.data:byte(6) == 0 and setting.spell and e.data:sub(9, 18) ~= info.last44 then
-        --print('packet_in - 0x44'); --debug
         local t = {};
         for x = 9, 28 do
             if skills[4][e.data:byte(x)+512] then
@@ -485,7 +460,6 @@ end)
 
 ashita.events.register('packet_out', 'packet_out_cb', function(e)
     if e.id == 0x100 and e.data:byte(5) ~= 0 then
-        --print('packet_out - 0x100'); --debug
         info = {job=jobs[e.data:byte(5)] or 'MON', member=info.member, player=info.player}
         initialize();
     end
@@ -515,28 +489,28 @@ ashita.events.register('command', 'command_cb', function(e)
     elseif commands[2] == 'pos' then
         skill_props:SetPositionX(commands[3]:tonumber());
         skill_props:SetPositionY(commands[4]:tonumber());
-    elseif sc.config.Show[commands[2]] then
-        if not S(sc.config.Show[commands[2]])[info.job] then
+    elseif config.Show[commands[2]] then
+        if not S(default.Show[commands[2]])[info.job] then
             print(string.format('\31\167%s Error: \31\207unable to set %s on %s.',addon.name, commands[2], info.job));
             return true;
         end
         local key;
         if not setting[commands[2]] then
-            table.insert(sc.config.Show[commands[2]], info.job);
+            table.insert(config.Show[commands[2]], info.job);
         else
-            for k,v in pairs(sc.config.Show[commands[2]]) do
+            for k,v in pairs(config.Show[commands[2]]) do
                 if v == info.job then
                     key = k;
-                    table.remove(sc.config.Show[commands[2]], key);
+                    table.remove(config.Show[commands[2]], key);
                     break;
                 end
             end
         end
-        setting[commands[2]] = S(sc.config.Show[commands[2]])[info.job];
+        setting[commands[2]] = S(config.Show[commands[2]])[info.job];
         print(string.format('\31\207%s: %s info will no%s be displayed on %s', addon.name, commands[2], key and ' longer' or 'w', info.job));--'t' or 'w'
-    elseif type(sc.config[commands[2]]) == 'boolean' then
-        sc.config[commands[2]] = not sc.config[commands[2]];
-        print(string.format('\31\207%s: %s %s',addon.name, commands[2], sc.config[commands[2]] and 'on' or 'off'));
+    elseif type(default[commands[2]]) == 'boolean' then
+        config[commands[2]] = not config[commands[2]];
+        print(string.format('\31\207%s: %s %s',addon.name, commands[2], config[commands[2]] and 'on' or 'off'));
     elseif commands[2] == 'eval' then
         assert(loadstring(table.concat(commands, ' ', 3)))();
     else
