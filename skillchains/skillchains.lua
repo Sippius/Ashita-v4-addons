@@ -28,28 +28,40 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 addon.author = 'Ivaar, sippius(v4)';
 addon.name = 'SkillChains';
-addon.version = '1.20.08.19, 0.2(v4)';
+addon.version = '1.20.08.19, 0.3(v4)';
 
 require 'common';
 --require 'timer';
 local skills = require('skills');
 local settings = require('settings');
+local fonts = require('fonts');
 
-local jobs = {'WAR','MNK','WHM','BLM','RDM','THF','PLD','DRK','BST','BRD','RNG','SAM','NIN','DRG','SMN','BLU','COR','PUP','DNC','SCH','GEO','RUN'};
+local jobs = T{'WAR','MNK','WHM','BLM','RDM','THF','PLD','DRK','BST','BRD','RNG','SAM','NIN','DRG','SMN','BLU','COR','PUP','DNC','SCH','GEO','RUN'};
 
-local default = {};
-default.Show = {burst=jobs, pet={'BST','SMN'}, props=jobs, spell={'SCH','BLU'}, step=jobs, timer=jobs, weapon=jobs};
-default.aeonic = false;
-default.color = false;
-default.display = {};
-default.display.bg = true;
-default.display.bgcolor = math.d3dcolor(102, 0, 0, 0);
-default.display.color = math.d3dcolor(255,255,255,255);
-default.display.font = 'Consolas';
-default.display.pos = {x=0,y=0};
-default.display.size = 10;
+local default = T{
+    Show = T{burst=jobs, pet=T{'BST','SMN'}, props=jobs, spell=T{'SCH','BLU'}, step=jobs, timer=jobs, weapon=jobs},
+    aeonic = false,
+    color = false,
+    font = T{
+        visible = false,
+        font_family = 'Consolas',
+        font_height = 10,
+        color = math.d3dcolor(255,255,255,255),
+        position_x = 100,
+        position_y = 100,
+        create_flags = 32,
+        background = T{
+            visible = true,
+            color = math.d3dcolor(102, 0, 0, 0),
+        },
+    },
+};
 
-local config = settings.load(default);
+-- Skillchain Variables
+local sc = T{
+    font = nil,
+    config = settings.load(default),
+};
 
 --[[
 * Updates the addon settings.
@@ -59,7 +71,12 @@ local config = settings.load(default);
 local function update_settings(s)
     -- Update the settings table..
     if (s ~= nil) then
-        config = s;
+        sc.config = s;
+    end
+
+    -- Apply the font settings..
+    if (sc.font ~= nil) then
+        sc.font:apply(sc.config.font);
     end
 
     -- Save the current settings..
@@ -70,6 +87,8 @@ end
 * Registers a callback for the settings to monitor for character switches.
 --]]
 settings.register('settings', 'settings_update', update_settings);
+
+
 
 local function S(list)
     local set = {};
@@ -134,9 +153,11 @@ local sc_info = {
 };
 
 ashita.events.register('unload', 'unload_cb', function()
-    local display = AshitaCore:GetFontManager():Get('skill_props');
-    config.display.pos = {x=display:GetPositionX(),y=display:GetPositionY() };
-    AshitaCore:GetFontManager():Delete('skill_props');
+    -- Cleanup the font object..
+    if (sc.font ~= nil) then
+        sc.font:destroy();
+        sc.font = nil;
+    end
     settings.save();
 end);
 
@@ -147,8 +168,8 @@ end
 
 local function initialize()
     setting = {};
-    for k,v in pairs(config.Show) do
-        setting[k] = S(config.Show[k])[info.job];
+    for k,v in pairs(sc.config.Show) do
+        setting[k] = S(sc.config.Show[k])[info.job];
     end
     if setting.spell and info.job == 20 then
         info.abilities = skills[20];
@@ -157,17 +178,7 @@ local function initialize()
 end
 
 ashita.events.register('load', 'load_cb', function()
-    skill_props = AshitaCore:GetFontManager():Create('skill_props');
-    --skill_props:AshitaCore:GetFontManager():FontCreateFlags::ClearType;
-    --skill_props:SetCreateFlags('ClearType');
-    skill_props:GetBackground():SetColor(config.display.bgcolor);
-    skill_props:GetBackground():SetVisible(config.display.bg);
-    skill_props:SetFontFamily(config.display.font);
-    skill_props:SetFontHeight(config.display.size);
-    skill_props:SetPositionX(config.display.pos.x);
-    skill_props:SetPositionY(config.display.pos.y);
-    --skill_props:SetVisibility(config.visibility);
-    skill_props:SetColor(config.display.color);
+    sc.font = fonts.new(sc.config.font);
 
     local player = AshitaCore:GetMemoryManager():GetPlayer();
     info.job = jobs[player:GetMainJob()];
@@ -212,7 +223,7 @@ local function aeonic_am(step)
 end
 
 local function aeonic_prop(ability, actor)
-    if not ability.aeonic or not info.aeonic and actor == info.player or not config.aeonic and info.player ~= actor then
+    if not ability.aeonic or not info.aeonic and actor == info.player or not sc.config.aeonic and info.player ~= actor then
         return ability.skillchain;
     end
     return {ability.skillchain[1], ability.skillchain[2], ability.aeonic};
@@ -241,7 +252,7 @@ local function add_skills(t, ability, active, aeonic)
         local lv, prop = check_props(active, aeonic_prop(ability[k], info.player));
         if prop then
             prop = aeonic and lv == 4 and sc_info[prop].aeonic[2] or prop;
-            tt[lv][#tt[lv]+1] = config.color and
+            tt[lv][#tt[lv]+1] = sc.config.color and
                 string.format('%-17s>> Lv.%d %s%-14s|r',ability[k].en, lv, colors[prop], prop) or
                 string.format('%-17s>> Lv.%d %-14s',ability[k].en, lv, prop);
         end
@@ -263,7 +274,7 @@ end
 
 local function colorize(t)
     local temp;
-    if config.color then
+    if sc.config.color then
         temp = {};
         for k=1,#t do
             temp[k] = string.format('%s%s|r',colors[t[k]], t[k]);
@@ -273,6 +284,14 @@ local function colorize(t)
 end
 
 ashita.events.register('d3d_present', 'present_cb', function()
+
+    if (sc.font == nil) then
+        return;
+    end
+
+    -- Update the current settings font position..
+    sc.config.font.position_x = sc.font.position_x;
+    sc.config.font.position_y = sc.font.position_y;
 
     local targ_id = AshitaCore:GetMemoryManager():GetTarget():GetServerId(0);
     local now = os.time();
@@ -312,10 +331,10 @@ ashita.events.register('d3d_present', 'present_cb', function()
                 table.insert(resonating[targ_id].disp_info, check_results(resonating[targ_id]));
             end
         end
-        skill_props:SetText(table.concat(resonating[targ_id].disp_info,'\n'));
-        skill_props:SetVisible(true);
+        sc.font.text = table.concat(resonating[targ_id].disp_info,'\n');
+        sc.font.visible = true;
     elseif not visible then
-        skill_props:SetVisible(false);
+        sc.font.visible = false;
     end
 end);
 
@@ -478,39 +497,39 @@ ashita.events.register('command', 'command_cb', function(e)
     commands[2] = commands[2] and string.lower(commands[2]);
     if commands[2] == 'move' then
         visible = not visible;
-        if visible and not skill_props:GetVisible() then
-            skill_props:SetText('\n          --- SkillChains ---\n\n Hold Shift+Click and drag to move display. \n\n');
-            skill_props:SetVisible(true);
+        if visible and not sc.font.visible then
+            sc.font.text = '\n          --- SkillChains ---\n\n Hold Shift+Click and drag to move display. \n\n';
+            sc.font.visible = true;
         elseif not visible then
-            skill_props:SetVisible(false);
+            sc.font.visible = false;
         end
     elseif commands[2] == 'save' then
         settings.save();
     elseif commands[2] == 'pos' then
-        skill_props:SetPositionX(commands[3]:tonumber());
-        skill_props:SetPositionY(commands[4]:tonumber());
-    elseif config.Show[commands[2]] then
+        sc.font.position_x = commands[3]:tonumber();
+        sc.font.position_y = commands[4]:tonumber();
+    elseif sc.config.Show[commands[2]] then
         if not S(default.Show[commands[2]])[info.job] then
             print(string.format('\31\167%s Error: \31\207unable to set %s on %s.',addon.name, commands[2], info.job));
             return true;
         end
         local key;
         if not setting[commands[2]] then
-            table.insert(config.Show[commands[2]], info.job);
+            table.insert(sc.config.Show[commands[2]], info.job);
         else
-            for k,v in pairs(config.Show[commands[2]]) do
+            for k,v in pairs(sc.config.Show[commands[2]]) do
                 if v == info.job then
                     key = k;
-                    table.remove(config.Show[commands[2]], key);
+                    table.remove(sc.config.Show[commands[2]], key);
                     break;
                 end
             end
         end
-        setting[commands[2]] = S(config.Show[commands[2]])[info.job];
+        setting[commands[2]] = S(sc.config.Show[commands[2]])[info.job];
         print(string.format('\31\207%s: %s info will no%s be displayed on %s', addon.name, commands[2], key and ' longer' or 'w', info.job));--'t' or 'w'
     elseif type(default[commands[2]]) == 'boolean' then
-        config[commands[2]] = not config[commands[2]];
-        print(string.format('\31\207%s: %s %s',addon.name, commands[2], config[commands[2]] and 'on' or 'off'));
+        sc.config[commands[2]] = not sc.config[commands[2]];
+        print(string.format('\31\207%s: %s %s',addon.name, commands[2], sc.config[commands[2]] and 'on' or 'off'));
     elseif commands[2] == 'eval' then
         assert(loadstring(table.concat(commands, ' ', 3)))();
     else
