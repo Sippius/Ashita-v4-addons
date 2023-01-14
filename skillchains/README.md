@@ -1,3 +1,9 @@
+Ashita v3 skillchains by Ivaar ported to Ashita v4. 
+- Not 100% stable. Crashes may be related to job changes when inventory is not fully loaded.
+- Not fully tested with all jobs/abilities and only tested on retail.
+- Added 'pos' command for setting position.
+- Believed to have a bug related to SCH spells, but not confirmed.
+
 # SkillChains
 ### Active Battle Skillchain Display.
 
@@ -7,8 +13,10 @@ along with a list of weapon skills that can skillchain based on the weapon you h
     /sc color    -- colorize properties and elements
     
     /sc move     -- displays text box hold shift+click and drag it to desired location.
-
+    
     /sc save     -- save settings.
+
+    /sc pos <x> <y> -- reposition the window to the defined x, y coordinates
 
 The following commands toggle the display information and are saved on a per job basis.
 
@@ -26,4 +34,4 @@ The following commands toggle the display information and are saved on a per job
 
     /sc step     -- current weaponskill step information.
 
-More settings related to text object can be found within the addons settings.json
+More settings related to text object can be found within the addons settings
