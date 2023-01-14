@@ -1,3 +1,6 @@
+Ashita v3 RollTracker by Daniel_H ported to Ashita v4.
+- Only tested on retail
+
 # Corsair Rolltracker
 ### "Beautifies" Roll Text look 
 
