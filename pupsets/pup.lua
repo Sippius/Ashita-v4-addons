@@ -2,7 +2,7 @@
 * Pupsets is based on the blusets addon delivered as part of Ashita.
 * It has been modified to provide similar functionality for pupetmaster.
 *
-* Ashita is free software: you can redistribute it and/or modify
+* Pupsets is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
 * (at your option) any later version.
