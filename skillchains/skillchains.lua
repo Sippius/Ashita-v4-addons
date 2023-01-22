@@ -171,7 +171,7 @@ local function initialize()
     for k,v in pairs(sc.config.Show) do
         setting[k] = S(sc.config.Show[k])[info.job];
     end
-    if setting.spell and info.job == 20 then
+    if setting.spell and info.job == 'SCH' then
         info.abilities = skills[20];
     end
     reset();
