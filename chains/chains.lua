@@ -21,7 +21,7 @@
 
 addon.name     = 'chains';
 addon.author   = 'Sippius - Original Ashita-v3 skillchains by Ivaar';
-addon.version  = '0.1';
+addon.version  = '0.2';
 addon.desc     = 'Display current skillchain options.';
 
 require('common');
@@ -64,7 +64,7 @@ local playerID;
 -- store list of valid player/pet skills
 -- * capture bluskill on 0x44 packet or first GetSkillchains call
 -- * capture wepskill on 0xAC packet or first GetSkillchains call
--- * capture petskill on 0xAC packet
+-- * capture petskill on 0xAC packet or first GetSkillchains call
 -- * capture schskill on load
 local actionTable = T{
     schskill = skills[20],
@@ -204,21 +204,21 @@ ChainBuffTypes = T{
 
 EquipSlotNames = T{
     [1] = 'Main',
-    [2] = 'Sub',
+    --[2] = 'Sub',
     [3] = 'Range',
-    [4] = 'Ammo',
-    [5] = 'Head',
-    [6] = 'Body',
-    [7] = 'Hands',
-    [8] = 'Legs',
-    [9] = 'Feet',
-    [10] = 'Neck',
-    [11] = 'Waist',
-    [12] = 'Ear1',
-    [13] = 'Ear2',
-    [14] = 'Ring1',
-    [15] = 'Ring2',
-    [16] = 'Back'
+    --[4] = 'Ammo',
+    --[5] = 'Head',
+    --[6] = 'Body',
+    --[7] = 'Hands',
+    --[8] = 'Legs',
+    --[9] = 'Feet',
+    --[10] = 'Neck',
+    --[11] = 'Waist',
+    --[12] = 'Ear1',
+    --[13] = 'Ear2',
+    --[14] = 'Ring1',
+    --[15] = 'Ring2',
+    --[16] = 'Back'
 };
 
 SkillPropNames = T{
@@ -298,13 +298,12 @@ end
 -- based on code from LuAshitacast by Thorny
 --=============================================================================
 -- Combined gData.GetEquipment and gEquip.GetCurrentEquip
--- Currently used: Main, Range
 --=============================================================================
 local GetEquipment = function()
     local inventoryManager = AshitaCore:GetMemoryManager():GetInventory();
     local equipTable = {};
-    for i = 1,16,1 do
-        local equippedItem = inventoryManager:GetEquippedItem(i - 1);
+    for k, v in pairs(EquipSlotNames) do
+        local equippedItem = inventoryManager:GetEquippedItem(k - 1);
         local index = bit.band(equippedItem.Index, 0x00FF);
         local eqEntry = {};
         if (index == 0) then
@@ -325,8 +324,7 @@ local GetEquipment = function()
                 singleTable.Item = eqEntry.Item;
                 singleTable.Name = resource.Name[1];
                 singleTable.Resource = resource;
-                local slot = EquipSlotNames[i];
-                equipTable[slot] = singleTable;
+                equipTable[v] = singleTable;
             end
         end
     end
@@ -443,8 +441,10 @@ local GetAeonicProperty = function(action, actor)
     local propertyTable = table.copy(action.skillchain);
 
     if action.aeonic and (action.weapon or chains.forceAeonic > 0) and actor == playerID and GetAftermathLevel()>0 then
-        local validMain = action.weapon == GetEquipment().Main or chains.forceAeonic > 0;
-        local validRange = action.weapon == GetEquipment().Range;
+        local main = GetEquipment().Main;
+        local range = GetEquipment().Range;
+        local validMain = action.weapon == (main and main.Name) or chains.forceAeonic > 0;
+        local validRange = action.weapon == (range and range.Name);
         if validMain or validRange then
             table.insert(propertyTable,1,action.aeonic);
         end
@@ -703,6 +703,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
 
         local actionPacket = ParseActionPacket(e);
 
+        -- Only the primary target and action are parsed assuming that is all that apply
         local actor = actionPacket.UserId;
         local target = actionPacket.Targets[1];
 
