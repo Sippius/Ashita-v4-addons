@@ -21,7 +21,7 @@
 
 addon.name     = 'chains';
 addon.author   = 'Sippius - Original Ashita-v3 skillchains by Ivaar';
-addon.version  = '0.3';
+addon.version  = '0.4';
 addon.desc     = 'Display current skillchain options.';
 
 require('common');
@@ -883,24 +883,25 @@ ashita.events.register('d3d_present', 'present_cb', function ()
     local targetId = AshitaCore:GetMemoryManager():GetTarget():GetServerId(0);
     local render = targetId ~= nil and targetTable[targetId] and targetTable[targetId].dur-(now-targetTable[targetId].ts) > 0;
 
-    local flags = bit.bor(
-        ImGuiWindowFlags_NoDecoration,
-        ImGuiWindowFlags_AlwaysAutoResize,
-        ImGuiWindowFlags_NoSavedSettings,
-        ImGuiWindowFlags_NoFocusOnAppearing,
-        ImGuiWindowFlags_NoNav)
-
-    imgui.SetNextWindowBgAlpha(0.8)
-    imgui.SetNextWindowSize({ 350, -1 }, ImGuiCond_Always)
-    imgui.SetNextWindowSizeConstraints({ -1, -1 }, { FLT_MAX, FLT_MAX })
-
-    if chains.position then
-        imgui.SetNextWindowPos({ chains.position.x, chains.position.y }, ImGuiCond_Always, { 0, 0 });
-    else
-        imgui.SetNextWindowPos({ chains.settings.position_x, chains.settings.position_y }, ImGuiCond_Appearing, { 0, 0 });
-    end
-
     if render or chains.visible or chains.position then
+
+        local flags = bit.bor(
+            ImGuiWindowFlags_NoDecoration,
+            ImGuiWindowFlags_AlwaysAutoResize,
+            ImGuiWindowFlags_NoSavedSettings,
+            ImGuiWindowFlags_NoFocusOnAppearing,
+            ImGuiWindowFlags_NoNav)
+
+        imgui.SetNextWindowBgAlpha(0.8)
+        imgui.SetNextWindowSize({ 350, -1 }, ImGuiCond_Always)
+        imgui.SetNextWindowSizeConstraints({ -1, -1 }, { FLT_MAX, FLT_MAX })
+
+        if chains.position then
+            imgui.SetNextWindowPos({ chains.position.x, chains.position.y }, ImGuiCond_Always, { 0, 0 });
+        else
+            imgui.SetNextWindowPos({ chains.settings.position_x, chains.settings.position_y }, ImGuiCond_Appearing, { 0, 0 });
+        end
+
         if (imgui.Begin('chains', true, flags)) then
 
             if render then
