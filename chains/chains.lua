@@ -21,7 +21,7 @@
 
 addon.name     = 'chains';
 addon.author   = 'Sippius - Original Ashita-v3 skillchains by Ivaar';
-addon.version  = '0.2';
+addon.version  = '0.3';
 addon.desc     = 'Display current skillchain options.';
 
 require('common');
@@ -180,10 +180,10 @@ local statusID = {
     AM1 = 270, -- Aftermath: Lv.1
     AM2 = 271, -- Aftermath: Lv.2
     AM3 = 272, -- Aftermath: Lv.3
-    IM  = 470, -- Immanence
+    IM  = 470  -- Immanence
 };
 
-MessageTypes = T{
+local MessageTypes = T{
     2,   -- '<caster> casts <spell>. <target> takes <amount> damage'
     100, -- 'The <player> uses ..'
     110, -- '<user> uses <ability>. <target> takes <amount> damage.'
@@ -196,13 +196,18 @@ MessageTypes = T{
     802  -- 'The <user> uses <skill>. <number> HP drained from <target>.'
 }
 
-ChainBuffTypes = T{
-    [statusID.AL] = { duration = 30 }, -- 40 with relic hands
-    [statusID.CA] = { duration = 30 },
-    [statusID.IM] = { duration = 60 },
+local PetMessageTypes = T{
+    110, -- '<user> uses <ability>. <target> takes <amount> damage.'
+    317  -- 'The <player> uses .. <target> takes .. points of damage.'
 };
 
-EquipSlotNames = T{
+local ChainBuffTypes = T{
+    [statusID.AL] = { duration = 30 }, -- 40 with relic hands
+    [statusID.CA] = { duration = 30 },
+    [statusID.IM] = { duration = 60 }
+};
+
+local EquipSlotNames = T{
     [1] = 'Main',
     --[2] = 'Sub',
     [3] = 'Range',
@@ -221,7 +226,7 @@ EquipSlotNames = T{
     --[16] = 'Back'
 };
 
-SkillPropNames = T{
+local SkillPropNames = T{
     [1] = 'Light',
     [2] = 'Darkness',
     [3] = 'Gravitation',
@@ -552,7 +557,7 @@ end
 --=============================================================================
 -- Copied from tHotBar by Thorny as part of ParseActionPacket
 --=============================================================================
-function Error(text)
+local function Error(text)
     local color = ('\30%c'):format(68);
     local highlighted = color .. string.gsub(text, '$H', '\30\01\30\02');
     highlighted = string.gsub(highlighted, '$R', '\30\01' .. color);
@@ -714,8 +719,12 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
 
         local targetAction = target.Actions[1];
 
+        -- Overload packet type for pet actions (?)
+        -- Prevents Weapon Bash from matching as an actionSkill
+        local category = PetMessageTypes:contains(targetAction.Message) and 13 or actionPacket.Type;
+
         -- capture valid action skill and added effect property if there is a match
-        local actionSkill = skills[actionPacket.Type] and skills[actionPacket.Type][bit.band(actionPacket.Id,0xFFFF)];
+        local actionSkill = skills[category] and skills[category][bit.band(actionPacket.Id,0xFFFF)];
         local effectProperty = targetAction.AdditionalEffect and SkillPropNames[bit.band(targetAction.AdditionalEffect.Damage,0x3F)];
 
         --debug
@@ -727,6 +736,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
                 out = string.format('%d, %d - %s',actionPacket.Type, targetAction.Message, actionSkill.en);
             end
             print(chat.header(0x28):append(chat.error(out)));
+            print(chat.header(0x28):append(chat.error(actionPacket.Id)));
         end
 
         -- Check for valid action skill with valid added effect propery - after first setp
