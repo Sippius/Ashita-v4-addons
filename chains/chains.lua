@@ -735,7 +735,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
             end
             print(chat.header('0x28'):append(chat.error(out)));
             if targetAction then
-                out = ('Action: %s'):fmt(targetAction.Message);
+                out = ('Action Message: %s'):fmt(targetAction.Message);
                 if targetAction.AdditionalEffect then
                     out = out .. (' Effect: %s'):fmt(targetAction.AdditionalEffect.Damage);
                 end
