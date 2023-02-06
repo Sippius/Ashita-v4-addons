@@ -21,7 +21,7 @@
 
 addon.name     = 'chains';
 addon.author   = 'Sippius - Original Ashita-v3 skillchains by Ivaar';
-addon.version  = '0.4';
+addon.version  = '0.5';
 addon.desc     = 'Display current skillchain options.';
 
 require('common');
@@ -727,17 +727,25 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
         local actionSkill = skills[category] and skills[category][bit.band(actionPacket.Id,0xFFFF)];
         local effectProperty = targetAction.AdditionalEffect and SkillPropNames[bit.band(targetAction.AdditionalEffect.Damage,0x3F)];
 
-        --debug
-        if chains.debug and actionPacket and actionSkill then
-            local out;
-            if targetAction and targetAction.AdditionalEffect then
-                out = string.format('%d, %d, %d - %s',actionPacket.Type, targetAction.Message, targetAction.AdditionalEffect.Damage, actionSkill.en);
-            else
-                out = string.format('%d, %d - %s',actionPacket.Type, targetAction.Message, actionSkill.en);
+        --debug ===============================================================
+        if chains.debug and T{ 3, 6, 13, 14 }:contains(actionPacket.Type) then
+            local out = ('Type: %s -> %s, Id: %s'):fmt(actionPacket.Type, category, actionPacket.Id);
+            if actionSkill then
+                out = out .. (' Skill: %s'):fmt(actionSkill.en);
             end
-            print(chat.header(0x28):append(chat.error(out)));
-            print(chat.header(0x28):append(chat.error(actionPacket.Id)));
+            print(chat.header('0x28'):append(chat.error(out)));
+            if targetAction then
+                out = ('Action: %s'):fmt(targetAction.Message);
+                if targetAction.AdditionalEffect then
+                    out = out .. (' Effect: %s'):fmt(targetAction.AdditionalEffect.Damage);
+                end
+                if effectProperty then
+                    out = out .. (' Property: %s'):fmt(effectProperty);
+                end
+            end
+            print(chat.header('0x28'):append(chat.error(out)));
         end
+        --=====================================================================
 
         -- Check for valid action skill with valid added effect propery - after first setp
         if actionSkill and effectProperty then
@@ -1003,6 +1011,14 @@ ashita.events.register('command', 'command_cb', function (e)
 
     -- Block all related commands..
     e.blocked = true;
+
+    --========================================================================
+    -- Debug
+    --========================================================================
+    if (#args == 2) and (args[2] == 'debug') then
+        chains.debug = not chains.debug;
+        print(chat.header(addon.name):append(chat.message('%s: %s'):fmt(args[2], chains.debug and 'on' or 'off')));
+    end
 
     --========================================================================
     -- Settings
