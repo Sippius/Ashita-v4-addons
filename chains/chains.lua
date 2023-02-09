@@ -859,6 +859,22 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
 
 end);
 
+function GetIsMob(targetEntity)
+	if (targetEntity == nil) then
+		return false;
+	end
+    -- Obtain the entity spawn flags..
+    local flag = targetEntity.SpawnFlags;
+    -- Determine the entity type
+	local isMob;
+    if (bit.band(flag, 0x0001) == 0x0001 or bit.band(flag, 0x0002) == 0x0002) then --players and npcs
+        isMob = false;
+    else --mob
+		isMob = true;
+    end
+	return isMob;
+end
+
 --=============================================================================
 -- event: d3d_present
 -- desc: Event called when the Direct3D device is presenting a scene.
@@ -888,8 +904,36 @@ ashita.events.register('d3d_present', 'present_cb', function ()
     end
 
     -- UI
-    local targetId = AshitaCore:GetMemoryManager():GetTarget():GetServerId(0);
-    local render = targetId ~= nil and targetTable[targetId] and targetTable[targetId].dur-(now-targetTable[targetId].ts) > 0;
+    local targetId = nil;
+    local render = nil;
+
+    for i = 0, 5 do
+        -- Get a party member
+        local partyMemberTargetIndex = AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(i);
+        local partyMemberTargetEntity = GetEntity(partyMemberTargetIndex);
+
+        if (partyMemberTargetEntity ~= nil) then
+            -- Obtain the target of party member (not always accurate)
+            local totEntity = nil;
+            local totIndex = partyMemberTargetEntity.TargetedIndex;
+            if (totIndex ~= nil) then
+                totEntity = GetEntity(totIndex);
+            end
+            if (totEntity ~= nil and totEntity.Name ~= nil and GetIsMob(totEntity)) then
+                local tempTargetId = totEntity.ServerId;
+                if (tempTargetId ~= nil and targetTable[tempTargetId] and targetTable[tempTargetId].dur-(now-targetTable[tempTargetId].ts) > 0) then
+                    targetId = tempTargetId;
+                    render = true;
+                    break;
+                end
+            end
+        end
+    end
+    
+    if (targetId == nil) then
+        targetId = AshitaCore:GetMemoryManager():GetTarget():GetServerId(0);
+        render = targetId ~= nil and targetTable[targetId] and targetTable[targetId].dur-(now-targetTable[targetId].ts) > 0;
+    end
 
     if render or chains.visible or chains.position then
 
