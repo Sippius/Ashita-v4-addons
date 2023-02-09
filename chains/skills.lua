@@ -1,10 +1,8 @@
 --[[
 Copyright © 2017, Ivaar
 All rights reserved.
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-
 * Redistributions of source code must retain the above copyright
   notice, this list of conditions and the following disclaimer.
 * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +11,6 @@ modification, are permitted provided that the following conditions are met:
 * Neither the name of SkillChains nor the
   names of its contributors may be used to endorse or promote products
   derived from this software without specific prior written permission.
-
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -62,7 +59,7 @@ skills[3] = { --Weaponskills
     [34] = {en='Red Lotus Blade',skillchain={'Liquefaction','Detonation'}},
     [35] = {en='Flat Blade',skillchain={'Impaction'}},
     [36] = {en='Shining Blade',skillchain={'Scission'}},
-    [37] = {en='Seraph Blade',skillchain={'Scission', 'Transfixion'}},
+    [37] = {en='Seraph Blade',skillchain={'Scission'}},
     [38] = {en='Circle Blade',skillchain={'Reverberation','Impaction'}},
     [40] = {en='Vorpal Blade',skillchain={'Scission','Impaction'}},
     [41] = {en='Swift Blade',skillchain={'Gravitation'}},
@@ -88,12 +85,12 @@ skills[3] = { --Weaponskills
     [64] = {en='Raging Axe',skillchain={'Detonation','Impaction'}},
     [65] = {en='Smash Axe',skillchain={'Induration','Reverberation'}},
     [66] = {en='Gale Axe',skillchain={'Detonation'}},
-    [67] = {en='Avalanche Axe',skillchain={'Induration'}},
+    [67] = {en='Avalanche Axe',skillchain={'Scission','Impaction'}},
     [68] = {en='Spinning Axe',skillchain={'Liquefaction','Scission','Impaction'}},
     [69] = {en='Rampage',skillchain={'Scission'}},
     [70] = {en='Calamity',skillchain={'Scission','Impaction'}},
     [71] = {en='Mistral Axe',skillchain={'Fusion'}},
-    [72] = {en='Decimation',skillchain={'Fusion','Detonation'}},
+    [72] = {en='Decimation',skillchain={'Fusion','Reverberation'}},
     [73] = {en='Onslaught',skillchain={'Darkness','Gravitation'}},
     [74] = {en='Primal Rend',skillchain={'Gravitation','Reverberation'}},
     [75] = {en='Bora Axe',skillchain={'Scission','Detonation'}},
@@ -170,8 +167,8 @@ skills[3] = { --Weaponskills
     [156] = {en='Tachi: Fudo',skillchain={'Light','Distortion'}},
     [157] = {en='Tachi: Shoha',skillchain={'Fragmentation','Compression'},aeonic='Light',weapon='Dojikiri Yasutsuna'},
     [158] = {en='Tachi: Suikawari',skillchain={'Fusion'}},
-    [160] = {en='Shining Strike',skillchain={'Transfixion'}},
-    [161] = {en='Seraph Strike',skillchain={'Scission'}},
+    [160] = {en='Shining Strike',skillchain={'Impaction'}},
+    [161] = {en='Seraph Strike',skillchain={'Impaction'}},
     [162] = {en='Brainshaker',skillchain={'Reverberation'}},
     [165] = {en='Skullbreaker',skillchain={'Induration','Reverberation'}},
     [166] = {en='True Strike',skillchain={'Detonation','Impaction'}},
@@ -185,8 +182,8 @@ skills[3] = { --Weaponskills
     [176] = {en='Heavy Swing',skillchain={'Impaction'}},
     [177] = {en='Rock Crusher',skillchain={'Impaction'}},
     [178] = {en='Earth Crusher',skillchain={'Detonation','Impaction'}},
-    [179] = {en='Starburst',skillchain={'Compression','Transfixion'}},
-    [180] = {en='Sunburst',skillchain={'Transfixion','Reverberation'}},
+    [179] = {en='Starburst',skillchain={'Compression','Reverberation'}},
+    [180] = {en='Sunburst',skillchain={'Compression','Reverberation'}},
     [181] = {en='Shell Crusher',skillchain={'Detonation'}},
     [182] = {en='Full Swing',skillchain={'Liquefaction','Impaction'}},
     [184] = {en='Retribution',skillchain={'Gravitation','Reverberation'}},
@@ -748,7 +745,7 @@ skills[11] = { -- NPC TP skills
     }
 
 skills[13] = { -- BST/SMN Pet Skills
-    [907] = {en='Poison Nails',skillchain={'Transfixion'}},
+    [513] = {en='Poison Nails',skillchain={'Transfixion'}},
     [521] = {en='Regal Scratch',skillchain={'Scission'}},
     [528] = {en='Moonlit Charge',skillchain={'Compression'}},
     [529] = {en='Crescent Fang',skillchain={'Transfixion'}},
