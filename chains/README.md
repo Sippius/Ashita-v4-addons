@@ -43,6 +43,7 @@ The following commands toggle the display information.
 - Azure Lore duration is hard coded to 30 seconds (no check for relic hands)
 - Cannot detect when another player cancels their spell abilities
 - Aeonic testing is limited due to lack of weapon to test with
+- Pet skill IDs and skillchain properties in skills.lua require modification for private servers
 
 ### Possible future ehancements
 - Improve display configuration and re-implement some/all of the previous options
