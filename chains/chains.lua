@@ -21,7 +21,7 @@
 
 addon.name     = 'chains';
 addon.author   = 'Sippius - Original Ashita-v3 skillchains by Ivaar';
-addon.version  = '0.5';
+addon.version  = '0.6';
 addon.desc     = 'Display current skillchain options.';
 
 require('common');
@@ -67,7 +67,7 @@ local playerID;
 -- * capture petskill on 0xAC packet or first GetSkillchains call
 -- * capture schskill on load
 local actionTable = T{
-    schskill = skills[20],
+    schskill = skills.immanence,
 };
 
 -- store per player buff information
@@ -388,7 +388,7 @@ local function GetPetskills()
     local skillTable = T{};
     local pPlayer = AshitaCore:GetMemoryManager():GetPlayer();
 
-    for k,v in pairs(skills[13]) do
+    for k,v in pairs(skills.playerPet) do
         if v and pPlayer:HasAbility(k+512) then
             skillTable:append(v);
         end
@@ -824,6 +824,15 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
         actionTable.wepskill = T{};
         actionTable.petskill = T{};
 
+        -- Packet contains one bit per ability to indicate if the ability is available
+        -- * Byte in packet = floor(abilityID / 8) + 1
+        -- * Bit in byte = abilityID % 8
+        -- Logic does the following:
+        -- * extract byte
+        -- * shift bits right to move relavent bit to bit[0]
+        -- * mask upper bits and compare to 1 (or >0)
+        -- * alt equation: bit.band(bit.rshift(data:byte(math.floor(k/8)+1),(k%8)),0x01) == 1
+
         -- Weaponskills
         local data = e.data:sub(5);
         for k,v in pairs(skills[3]) do
@@ -834,7 +843,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
 
         -- BST/SMN PetSkills - fix: skip if not BST or SMN?
         data = e.data:sub(69);
-        for k,v in pairs(skills[13]) do
+        for k,v in pairs(skills.playerPet) do
             if math.floor((data:byte(math.floor(k/8)+1)%2^(k%8+1))/2^(k%8)) == 1 then
                 table.insert(actionTable.petskill, v);
             end

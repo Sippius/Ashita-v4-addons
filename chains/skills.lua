@@ -25,9 +25,10 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]]
-local skills = {}
 
-skills[3] = { --Weaponskills
+local skills = {};
+
+skills[3] = { -- Weaponskills
     [1] = {en='Combo',skillchain={'Impaction'}},
     [2] = {en='Shoulder Tackle',skillchain={'Reverberation','Impaction'}},
     [3] = {en='One Inch Punch',skillchain={'Compression'}},
@@ -222,14 +223,14 @@ skills[3] = { --Weaponskills
     [221] = {en='Last Stand',skillchain={'Fusion','Reverberation'},aeonic='Light',weapon='Fomalhaut'},
     [224] = {en='Exenterator',skillchain={'Fragmentation','Scission'},aeonic='Light',weapon='Aeneas'},
     [225] = {en='Chant du Cygne',skillchain={'Light','Distortion'}},
-    [226] = {en='Requiescat',skillchain={'Gravitation','Scission'},aeonic='Darkness',weapon='Sequence'},
+    [226] = {en='Requiescat',skillchain={'Gravitation','Scission'},aeonic='Darkness',weapon=-'Sequence'},
     [227] = {en='Knights of Rotund',skillchain={'Light'}},
     [228] = {en='Final Paradise',skillchain={'Light'}},
     [238] = {en='Uriel Blade',skillchain={'Light','Fragmentation'}},
     [239] = {en='Glory Slash',skillchain={'Light','Fusion'}},
-    }
+};
 
-skills[4] = { --BLU Spells
+skills[4] = { -- BLU/SCH Spells
     [144] = {en='Fire',skillchain={'Liquefaction'}},
     [145] = {en='Fire II',skillchain={'Liquefaction'}},
     [146] = {en='Fire III',skillchain={'Liquefaction'}},
@@ -335,7 +336,7 @@ skills[4] = { --BLU Spells
     [890] = {en='Ionohelix II',skillchain={'Impaction'},delay=5},
     [891] = {en='Noctohelix II',skillchain={'Compression'},delay=5},
     [892] = {en='Luminohelix II',skillchain={'Transfixion'},delay=5},
-    }
+};
 
 skills[11] = { -- NPC TP skills
     [829] = {en='Great Wheel',skillchain={'Fragmentation','Scission'}},
@@ -745,9 +746,11 @@ skills[11] = { -- NPC TP skills
     [4212] = {en='Shockstorm Edge',skillchain={'Detonation','Impaction'}},
     [4213] = {en='Choreographed Carnage',skillchain={'Darkness','Distortion'}},
     [4214] = {en='Lock and Load',skillchain={'Fusion','Reverberation'}},
-    }
+};
 
-skills[13] = { -- BST/SMN Pet Skills
+-- Pet skills as triggered by player.
+-- Separated from skills as triggered by pet to ease support for private servers
+skills.playerPet = { -- BST/SMN Player Pet Skills
     [513] = {en='Poison Nails',skillchain={'Transfixion'}},
     [521] = {en='Regal Scratch',skillchain={'Scission'}},
     [528] = {en='Moonlit Charge',skillchain={'Compression'}},
@@ -823,14 +826,97 @@ skills[13] = { -- BST/SMN Pet Skills
     [961] = {en='Welt',skillchain={'Scission'}},
     [964] = {en='Roundhouse',skillchain={'Detonation'}},
     [970] = {en='Hysteric Assault',skillchain={'Fragmentation','Transfixion'}},
-    }
+};
+
+-- *** Modify pet skill IDs as needed for private server ***
+-- Pet skills as triggered by pet
+-- Separated from skills as triggered by player to ease support for private servers
+-- ASB ID values - https://github.com/AirSkyBoat/AirSkyBoat/blob/staging/sql/mob_skills.sql
+-- LSB ID values - https://github.com/LandSandBoat/server/blob/base/sql/mob_skills.sql
+skills[13] = { -- BST/SMN Pet Skills
+    [513] = skills.playerPet[513], -- ASB:  907 -- {en='Poison Nails',skillchain={'Transfixion'}},
+    [521] = skills.playerPet[521], -- ASB: xxxx -- {en='Regal Scratch',skillchain={'Scission'}},
+    [528] = skills.playerPet[528], -- ASB:  831 -- {en='Moonlit Charge',skillchain={'Compression'}},
+    [529] = skills.playerPet[529], -- ASB:  832 -- {en='Crescent Fang',skillchain={'Transfixion'}},
+    [534] = skills.playerPet[534], -- ASB:  836 -- {en='Eclipse Bite',skillchain={'Gravitation','Scission'}},
+    [544] = skills.playerPet[544], -- ASB:  840 -- {en='Punch',skillchain={'Liquefaction'}},
+    [546] = skills.playerPet[546], -- ASB:  842 -- {en='Burning Strike',skillchain={'Impaction'}},
+    [547] = skills.playerPet[547], -- ASB:  843 -- {en='Double Punch',skillchain={'Compression'}},
+    [550] = skills.playerPet[550], -- ASB:  846 -- {en='Flaming Crush',skillchain={'Fusion','Reverberation'}},
+    [560] = skills.playerPet[560], -- ASB:  849 -- {en='Rock Throw',skillchain={'Scission'}},
+    [562] = skills.playerPet[562], -- ASB:  851 -- {en='Rock Buster',skillchain={'Reverberation'}},
+    [563] = skills.playerPet[563], -- ASB:  852 -- {en='Megalith Throw',skillchain={'Induration'}},
+    [566] = skills.playerPet[566], -- ASB:  855 -- {en='Mountain Buster',skillchain={'Gravitation','Induration'}},
+    [570] = skills.playerPet[570], -- ASB: xxxx -- {en='Crag Throw',skillchain={'Gravitation','Scission'}},
+    [576] = skills.playerPet[576], -- ASB:  858 -- {en='Barracuda Dive',skillchain={'Reverberation'}},
+    [578] = skills.playerPet[578], -- ASB:  860 -- {en='Tail Whip',skillchain={'Detonation'}},
+    [582] = skills.playerPet[582], -- ASB:  864 -- {en='Spinning Dive',skillchain={'Distortion','Detonation'}},
+    [592] = skills.playerPet[592], -- ASB:  876 -- {en='Claw',skillchain={'Detonation'}},
+    [598] = skills.playerPet[598], -- ASB:  873 -- {en='Predator Claws',skillchain={'Fragmentation','Scission'}},
+    [608] = skills.playerPet[608], -- ASB:  876 -- {en='Axe Kick',skillchain={'Induration'}},
+    [612] = skills.playerPet[612], -- ASB:  880 -- {en='Double Slap',skillchain={'Scission'}},
+    [614] = skills.playerPet[614], -- ASB:  882 -- {en='Rush',skillchain={'Distortion','Scission'}},
+    [624] = skills.playerPet[624], -- ASB:  885 -- {en='Shock Strike',skillchain={'Impaction'}},
+    [630] = skills.playerPet[630], -- ASB:  891 -- {en='Chaotic Strike',skillchain={'Fragmentation','Transfixion'}},
+    [634] = skills.playerPet[634], -- ASB: xxxx -- {en='Volt Strike',skillchain={'Fragmentation','Scission'}},
+    [656] = skills.playerPet[656], -- ASB: 1903 -- {en='Camisado',skillchain={'Compression'}},
+    [667] = skills.playerPet[667], -- ASB: xxxx -- {en='Blindside',skillchain={'Gravitation','Transfixion'}},
+    [672] = skills.playerPet[672], -- ASB:  257 -- {en='Foot Kick',skillchain={'Reverberation'}},
+    [674] = skills.playerPet[674], -- ASB:  258 -- {en='Whirl Claws',skillchain={'Impaction'}},
+    [675] = skills.playerPet[675], -- ASB:  300 -- {en='Head Butt',skillchain={'Detonation'}},
+    [677] = skills.playerPet[677], -- ASB:  302 -- {en='Wild Oats',skillchain={'Transfixion'}},
+    [678] = skills.playerPet[678], -- ASB:  305 -- {en='Leaf Dagger',skillchain={'Scission'}},
+    [681] = skills.playerPet[681], -- ASB:  271 -- {en='Razor Fang',skillchain={'Impaction'}},
+    [682] = skills.playerPet[682], -- ASB:  273 -- {en='Claw Cyclone',skillchain={'Scission'}},
+    [683] = skills.playerPet[683], -- ASB:  366 -- {en='Tail Blow',skillchain={'Impaction'}},
+    [685] = skills.playerPet[685], -- ASB:  368 -- {en='Blockhead',skillchain={'Reverberation'}},
+    [686] = skills.playerPet[686], -- ASB:  369 -- {en='Brain Crush',skillchain={'Liquefaction'}},
+    [689] = skills.playerPet[689], -- ASB:  260 -- {en='Lamb Chop',skillchain={'Impaction'}},
+    [691] = skills.playerPet[691], -- ASB:  262 -- {en='Sheep Charge',skillchain={'Reverberation'}},
+    [695] = skills.playerPet[695], -- ASB:  444 -- {en='Big Scissors',skillchain={'Scission'}},
+    [698] = skills.playerPet[698], -- ASB:  321 -- {en='Needleshot',skillchain={'Transfixion'}},
+    [699] = skills.playerPet[699], -- ASB:  322 -- {en='??? Needles',skillchain={'Darkness','Fragmentation'}},
+    [700] = skills.playerPet[700], -- ASB:  308 -- {en='Frogkick',skillchain={'Compression'}},
+    [707] = skills.playerPet[707], -- ASB:  338 -- {en='Power Attack',skillchain={'Reverberation'}},
+    [709] = skills.playerPet[709], -- ASB:  340 -- {en='Rhino Attack',skillchain={'Detonation'}},
+    [717] = skills.playerPet[717], -- ASB:  279 -- {en='Mandibular Bite',skillchain={'Detonation'}},
+    [723] = skills.playerPet[723], -- ASB:  518 -- {en='Nimble Snap',skillchain={'Impaction'}},
+    [724] = skills.playerPet[724], -- ASB:  519 -- {en='Cyclotail',skillchain={'Impaction'}},
+    [726] = skills.playerPet[726], -- ASB:  362 -- {en='Double Claw',skillchain={'Liquefaction'}},
+    [727] = skills.playerPet[727], -- ASB:  363 -- {en='Grapple',skillchain={'Reverberation'}},
+    [728] = skills.playerPet[728], -- ASB:  365 -- {en='Spinning Top',skillchain={'Impaction'}},
+    [732] = skills.playerPet[732], -- ASB:  414 -- {en='Suction',skillchain={'Compression'}},
+    [736] = skills.playerPet[736], -- ASB: 2178 -- {en='Sudden Lunge',skillchain={'Impaction'}},
+    [737] = skills.playerPet[737], -- ASB: 2181 -- {en='Spiral Spin',skillchain={'Scission'}},
+    [743] = skills.playerPet[743], -- ASB:  380 -- {en='Scythe Tail',skillchain={'Liquefaction'}},
+    [744] = skills.playerPet[744], -- ASB:  374 -- {en='Ripper Fang',skillchain={'Induration'}},
+    [745] = skills.playerPet[745], -- ASB:  379 -- {en='Chomp Rush',skillchain={'Darkness','Gravitation'}},
+    [749] = skills.playerPet[749], -- ASB:  576 -- {en='Back Heel',skillchain={'Reverberation'}},
+    [753] = skills.playerPet[753], -- ASB:  806 -- {en='Tortoise Stomp',skillchain={'Liquefaction'}},
+    [756] = skills.playerPet[756], -- ASB: 1714 -- {en='Wing Slap',skillchain={'Gravitation','Liquefaction'}},
+    [757] = skills.playerPet[757], -- ASB: 1715 -- {en='Beak Lunge',skillchain={'Scission'}},
+    [759] = skills.playerPet[759], -- ASB:  641 -- {en='Recoil Dive',skillchain={'Transfixion'}},
+    [761] = skills.playerPet[761], -- ASB: 2946 -- {en='Sensilla Blades',skillchain={'Scission'}},
+    [762] = skills.playerPet[762], -- ASB: 2947 -- {en='Tegmina Buffet',skillchain={'Distortion','Detonation'}},
+    [764] = skills.playerPet[764], -- ASB: 3065 -- {en='Swooping Frenzy',skillchain={'Fusion','Reverberation'}},
+    [765] = skills.playerPet[765], -- ASB: xxxx -- {en='Sweeping Gouge',skillchain={'Induration'}},
+    [767] = skills.playerPet[767], -- ASB: 3064 -- {en='Pentapeck',skillchain={'Light','Distortion'}},
+    [768] = skills.playerPet[768], -- ASB: 3097 -- {en='Tickling Tendrils',skillchain={'Impaction'}},
+    [772] = skills.playerPet[772], -- ASB:  318 -- {en='Somersault',skillchain={'Compression'}},
+    [776] = skills.playerPet[776], -- ASB: 1699 -- {en='Pecking Flurry',skillchain={'Transfixion'}},
+    [777] = skills.playerPet[777], -- ASB:  810 -- {en='Sickle Slash',skillchain={'Transfixion'}},
+    [780] = skills.playerPet[780], -- ASB: xxxx -- {en='Regal Gash',skillchain={'Distortion','Detonation'}},
+    [961] = skills.playerPet[961], -- ASB: xxxx -- {en='Welt',skillchain={'Scission'}},
+    [964] = skills.playerPet[964], -- ASB: xxxx -- {en='Roundhouse',skillchain={'Detonation'}},
+    [970] = skills.playerPet[970], -- ASB: xxxx -- {en='Hysteric Assault',skillchain={'Fragmentation','Transfixion'}},
+};
 
 skills[14] = { -- DNC/SAM chainbound abilities
     [209] = {en='Wild Flourish',skillchain={'Compression','Liquefaction','Induration','Reverberation','Scission'}},
     [320] = {en='Konzen-ittai',skillchain={'Light','Darkness','Gravitation','Fragmentation','Distortion','Compression','Liquefaction','Induration','Reverberation','Scission'}},
-    }
+};
 
-skills[20] = { -- SCH Immanence properties
+skills.immanence = { -- SCH Immanence properties
     [1] = {en='Fire',skillchain={'Liquefaction'}},
     [2] = {en='Ice',skillchain={'Induration'}},
     [3] = {en='Wind',skillchain={'Detonation'}},
@@ -839,6 +925,6 @@ skills[20] = { -- SCH Immanence properties
     [6] = {en='Water',skillchain={'Reverberation'}},
     [7] = {en='Light',skillchain={'Transfixion'}},
     [8] = {en='Dark',skillchain={'Compression'}},
-    }
+};
 
 return skills
