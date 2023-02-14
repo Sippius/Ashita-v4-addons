@@ -828,7 +828,7 @@ skills.playerPet = { -- BST/SMN Player Pet Skills
     [970] = {en='Hysteric Assault',skillchain={'Fragmentation','Transfixion'}},
 };
 
--- *** Modify pet skill IDs as needed for private server ***
+-- *** Modify key IDs as needed for private server ***
 -- Pet skills as triggered by pet
 -- Separated from skills as triggered by player to ease support for private servers
 -- ASB ID values - https://github.com/AirSkyBoat/AirSkyBoat/blob/staging/sql/mob_skills.sql
