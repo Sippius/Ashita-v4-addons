@@ -38,6 +38,7 @@ The following commands toggle the display information.
 - Support for Aeonic weapons and ultimate skillchains (limited testing)
 
 ### Known Issues/limitations
+- Pet skills only work on BST and SMN main
 - Chain Affinity only works with BLU main
 - Azure Lore duration is hard coded to 30 seconds (no check for relic hands)
 - Cannot detect when another player cancels their spell abilities
