@@ -1,9 +1,12 @@
+### ========== Deprecated ==========
+
 Ashita v3 skillchains by Ivaar ported to Ashita v4. 
 - Not 100% stable. Crashes may be related to job changes when inventory is not fully loaded.
 - Not fully tested with all jobs/abilities and only tested on retail.
 - Added 'pos' command for setting position.
 
 # SkillChains
+
 ### Active Battle Skillchain Display.
 
 Displays a text object containing skillchain elements resonating on current target, timer for skillchain window,
