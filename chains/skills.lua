@@ -223,7 +223,7 @@ skills[3] = { -- Weaponskills
     [221] = {en='Last Stand',skillchain={'Fusion','Reverberation'},aeonic='Light',weapon='Fomalhaut'},
     [224] = {en='Exenterator',skillchain={'Fragmentation','Scission'},aeonic='Light',weapon='Aeneas'},
     [225] = {en='Chant du Cygne',skillchain={'Light','Distortion'}},
-    [226] = {en='Requiescat',skillchain={'Gravitation','Scission'},aeonic='Darkness',weapon=-'Sequence'},
+    [226] = {en='Requiescat',skillchain={'Gravitation','Scission'},aeonic='Darkness',weapon='Sequence'},
     [227] = {en='Knights of Rotund',skillchain={'Light'}},
     [228] = {en='Final Paradise',skillchain={'Light'}},
     [238] = {en='Uriel Blade',skillchain={'Light','Fragmentation'}},
