@@ -21,7 +21,7 @@
 
 addon.name     = 'chains';
 addon.author   = 'Sippius - Original Ashita-v3 skillchains by Ivaar';
-addon.version  = '0.6.1';
+addon.version  = '0.6.2';
 addon.desc     = 'Display current skillchain options.';
 
 require('common');
@@ -185,7 +185,7 @@ local statusID = {
 
 local MessageTypes = T{
     2,   -- '<caster> casts <spell>. <target> takes <amount> damage'
-    100, -- 'The <player> uses ..'
+  --100, -- 'The <player> uses ..'
     110, -- '<user> uses <ability>. <target> takes <amount> damage.'
   --161, -- Additional effect: <number> HP drained from <target>.
   --162, -- Additional effect: <number> MP drained from <target>.
