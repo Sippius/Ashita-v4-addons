@@ -10,9 +10,11 @@ Chains is based on the skillchains addon by Ivaar for Ashita-v3. It has mostly b
 ### Commands
 The following commands may be used to adjust the window position.
 
-    /chains visible      -- displays text box - hold shift+click and drag it to desired location
+    /chains visible       -- displays text box - click and drag it to desired location
 
-    /chains move <x> <y> -- reposition the window to the defined x, y coordinates
+    /chains move <x> <y>  -- reposition the window to the defined x, y coordinates
+
+    /chains scale <value> -- set font scale
 
 The following commands toggle the display information.
 
@@ -38,12 +40,10 @@ The following commands toggle the display information.
 - Support for Aeonic weapons and ultimate skillchains (limited testing)
 
 ### Known Issues/limitations
-- Pet skills only work on BST and SMN main
 - Chain Affinity only works with BLU main
 - Azure Lore duration is hard coded to 30 seconds (no check for relic hands)
 - Cannot detect when another player cancels their spell abilities
 - Aeonic testing is limited due to lack of weapon to test with
-- Pet skill IDs and skillchain properties in skills.lua require modification for private servers
 
 ### Possible future ehancements
 - Improve display configuration and re-implement some/all of the previous options

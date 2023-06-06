@@ -21,7 +21,7 @@
 
 addon.name     = 'chains';
 addon.author   = 'Sippius - Original Ashita-v3 skillchains by Ivaar';
-addon.version  = '0.6.2';
+addon.version  = '0.7';
 addon.desc     = 'Display current skillchain options.';
 
 require('common');
@@ -38,6 +38,7 @@ local skills = require('skills');
 local default_settings = T{
     position_x = 100,
     position_y = 100,
+    font_scale = 1.0,
     display = T{
         color = true,
         pet = true,
@@ -185,7 +186,7 @@ local statusID = {
 
 local MessageTypes = T{
     2,   -- '<caster> casts <spell>. <target> takes <amount> damage'
-  --100, -- 'The <player> uses ..'
+  --100, -- 'The <player> uses ..' -- Causes Super Jump to match as Spinning Axe if enabled
     110, -- '<user> uses <ability>. <target> takes <amount> damage.'
   --161, -- Additional effect: <number> HP drained from <target>.
   --162, -- Additional effect: <number> MP drained from <target>.
@@ -257,8 +258,9 @@ settings.register('settings', 'settings_update', function (s)
 end);
 
 --=============================================================================
--- Return table with color formatting applied to each table entry
--- @return {table}
+-- Return color formatt table
+---@param t string Skillchain property
+---@return table
 --=============================================================================
 -- based on code from skillchains by Ivaar
 --=============================================================================
@@ -271,7 +273,8 @@ end
 
 --=============================================================================
 -- Return count of requested buff. Return zero if buff is not active.
--- @return {table}
+---@param matchBuff string Name of buff to check
+---@return integer count 
 --=============================================================================
 -- based on code from LuAshitacast by Thorny
 --=============================================================================
@@ -298,7 +301,7 @@ end
 
 --=============================================================================
 -- Return equipment data
--- @return {table}
+---@return table equipTable Current equipment information
 --=============================================================================
 -- based on code from LuAshitacast by Thorny
 --=============================================================================
@@ -307,6 +310,7 @@ end
 local GetEquipment = function()
     local inventoryManager = AshitaCore:GetMemoryManager():GetInventory();
     local equipTable = {};
+
     for k, v in pairs(EquipSlotNames) do
         local equippedItem = inventoryManager:GetEquippedItem(k - 1);
         local index = bit.band(equippedItem.Index, 0x00FF);
@@ -333,27 +337,27 @@ local GetEquipment = function()
             end
         end
     end
+
     return equipTable;
 end
 
 --=============================================================================
 -- Return player data
--- @return {table}
+---@return table playerTable Current player information
 --=============================================================================
 -- based on code from LuAshitacast by Thorny
 --=============================================================================
 local GetPlayer = function()
     local playerTable = {};
-    --local pEntity = AshitaCore:GetMemoryManager():GetEntity();
     local pParty = AshitaCore:GetMemoryManager():GetParty();
     local pPlayer = AshitaCore:GetMemoryManager():GetPlayer();
-    --local myIndex = pParty:GetMemberTargetIndex(0);
 
     local mainJob = pPlayer:GetMainJob();
     playerTable.MainJob = AshitaCore:GetResourceManager():GetString("jobs.names_abbr", mainJob);
     playerTable.MainJobLevel = pPlayer:GetJobLevel(mainJob);
     playerTable.MainJobSync = pPlayer:GetMainJobLevel();
     playerTable.Name = pParty:GetMemberName(0);
+
     local subJob = pPlayer:GetSubJob();
     playerTable.SubJob = AshitaCore:GetResourceManager():GetString("jobs.names_abbr", subJob);
     playerTable.SubJobLevel = pPlayer:GetJobLevel(subJob);
@@ -365,7 +369,7 @@ end
 
 --=============================================================================
 -- Return table with current weaponskill data
--- @return {table}
+---@return table skillTable Currently available weapon skills
 --=============================================================================
 local GetWeaponskills = function()
     local skillTable = T{};
@@ -382,7 +386,7 @@ end
 
 --=============================================================================
 -- Return table with current pet skill data
--- @return {table}
+---@return table skillTable Currently available pet skills
 --=============================================================================
 local function GetPetskills()
     local skillTable = T{};
@@ -398,15 +402,18 @@ local function GetPetskills()
   end
 
 --=============================================================================
--- Returns the table of current set BLU spells.
--- @return {table} The current set BLU spells.
+-- Define blu offset data for use by GetBluskills()
 --=============================================================================
--- based on code from blusets by Atom0s
---=============================================================================
-local blu = {
+  local blu = {
     offset = ffi.cast('uint32_t*', ashita.memory.find('FFXiMain.dll', 0, 'C1E1032BC8B0018D????????????B9????????F3A55F5E5B', 10, 0))
 };
 
+--=============================================================================
+-- Returns the table of current set BLU spells.
+---@return table skillTable The current set BLU spells.
+--=============================================================================
+-- based on code from blusets by Atom0s
+--=============================================================================
 function GetBluskills()
     local skillTable = T{};
 
@@ -431,16 +438,18 @@ function GetBluskills()
 end
 
 --=============================================================================
--- Return current aftermath level
--- @return {integer}
+---Return current aftermath level
+---@return integer
 --=============================================================================
 local GetAftermathLevel = function()
     return GetBuffCount(statusID.AM1) + 2*GetBuffCount(statusID.AM2) + 3*GetBuffCount(statusID.AM3) + chains.forceAeonic;
 end
 
 --=============================================================================
--- Return action property table with aeonic property added
--- @return {table}
+---Return action property table with aeonic property added
+---@param action table Action information
+---@param actor integer Actor ID
+---@return table propertyTable Updated property table
 --=============================================================================
 local GetAeonicProperty = function(action, actor)
     local propertyTable = table.copy(action.skillchain);
@@ -460,7 +469,8 @@ end
 
 --=============================================================================
 -- Return formatted table of valid skillchain options
--- @return {table}
+---@param target number ServerID of target
+---@return table chainTable Current skillchain options
 --=============================================================================
 local GetSkillchains = function(target)
     local actions = T{};
@@ -553,6 +563,55 @@ local GetSkillchains = function(target)
 end
 
 --=============================================================================
+-- Reset stored skillchain lists for each active target
+-- This would trigger on weapon, ability and pet changes
+--=============================================================================
+local function ResetSkillchains()
+    for _,v in pairs(targetTable) do
+        v.skillchains = nil;
+    end
+end
+
+--=============================================================================
+-- Return true if another player belongs to the player's alliance.
+---@param id number ServerId
+---@return boolean
+--=============================================================================
+local function isPlayerInAlliance(id)
+    local pParty = AshitaCore:GetMemoryManager():GetParty();
+
+    for i = 0, 17 do
+        if pParty:GetMemberIsActive(i) == 1 and pParty:GetMemberServerId(i) == id then
+            return true
+        end
+    end
+
+    return false
+end
+
+--=============================================================================
+-- Return true if a pet belongs to the player's alliance.
+---@param id number ServerId
+---@return boolean
+--=============================================================================
+local function isPetInAlliance(id)
+    local pParty = AshitaCore:GetMemoryManager():GetParty();
+    local pEntity = AshitaCore:GetMemoryManager():GetEntity();
+
+    for i = 0, 17 do
+        if pParty:GetMemberIsActive(i) == 1 then
+            local playerIndex = pParty:GetMemberTargetIndex(i);
+            local petIndex = pEntity:GetPetTargetIndex(playerIndex);
+            if pEntity:GetServerId(petIndex) == id then
+                return true;
+            end
+        end
+    end
+
+    return false
+end
+
+--=============================================================================
 -- Print formatted error information
 --=============================================================================
 -- Copied from tHotBar by Thorny as part of ParseActionPacket
@@ -566,9 +625,10 @@ end
 
 --=============================================================================
 -- Return action packet data in a table format
--- @return {table}
+---@param e table Incoming packet table
+---@return table pendingActionPacket Parsed action packet table
 --=============================================================================
--- based on code from tHotBar by Thorny
+-- Based on code from tHotBar by Thorny
 -- https://github.com/Windower/Lua/blob/dev/addons/libs/packets/data.lua
 -- https://github.com/Windower/Lua/blob/dev/addons/libs/packets/fields.lua
 --=============================================================================
@@ -712,7 +772,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
         local actor = actionPacket.UserId;
         local target = actionPacket.Targets[1];
 
-        -- exit if target is nill due to corrupted packet
+        -- exit if target is nil due to corrupted packet
         if not target then
             return;
         end
@@ -746,6 +806,11 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
             print(chat.header('0x28'):append(chat.error(out)));
         end
         --=====================================================================
+
+        -- exit if actor is not in alliance
+        --if not (isPlayerInAlliance(actor) or category == 13 and isPetInAlliance(actor)) then
+        --    return;
+        --end
 
         -- Check for valid action skill with valid added effect propery - after first setp
         if actionSkill and effectProperty then
@@ -849,6 +914,9 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
             end
         end
 
+        -- Reset skillchains on all active targets
+        ResetSkillchains();
+
         --actionTable.lastAC = e.data:sub(5); --dedupe?
 
     -- BLU spells - e.data:byte(5) == 0x10 indicates BLU, e.data:byte(6) == 0 indicates main job
@@ -910,7 +978,7 @@ ashita.events.register('d3d_present', 'present_cb', function ()
             ImGuiWindowFlags_NoNav)
 
         imgui.SetNextWindowBgAlpha(0.8)
-        imgui.SetNextWindowSize({ 350, -1 }, ImGuiCond_Always)
+        imgui.SetNextWindowSize({ 350 * chains.settings.font_scale, -1 }, ImGuiCond_Always)
         imgui.SetNextWindowSizeConstraints({ -1, -1 }, { FLT_MAX, FLT_MAX })
 
         if chains.position then
@@ -922,6 +990,8 @@ ashita.events.register('d3d_present', 'present_cb', function ()
         if (imgui.Begin('chains', true, flags)) then
 
             if render then
+                imgui.SetWindowFontScale(chains.settings.font_scale)
+
                 local timediff = now-targetTable[targetId].ts;
                 local timer = targetTable[targetId].dur-timediff;
 
@@ -975,6 +1045,10 @@ ashita.events.register('d3d_present', 'present_cb', function ()
                 imgui.Separator();
                 if not targetTable[targetId].closed then
                     local skillchains = GetSkillchains(targetTable[targetId]);
+                    -- Build skillchains list for target if it does not exist
+                    --if not targetTable[targetId].skillchains then
+                    --    targetTable[targetId].skillchains = skillchains;
+                    --end
                     for _,v in pairs(skillchains) do
                         imgui.Text(v.outText);
                         imgui.SameLine();
@@ -982,6 +1056,7 @@ ashita.events.register('d3d_present', 'present_cb', function ()
                     end
                 end
             elseif chains.visible then
+                imgui.SetWindowFontScale(chains.settings.font_scale)
                 imgui.Text('');
                 imgui.Text('                 --- Chains ---                 ');
                 imgui.Text('         Click and drag to move display         ');
@@ -1044,8 +1119,13 @@ ashita.events.register('command', 'command_cb', function (e)
     --========================================================================
     -- Window management
     --========================================================================
-    if (#args == 2) and (args[2] == 'visible') then
+    if (#args == 2) and (args[2] == 'visible') then 
         chains.visible = not chains.visible;
+    end
+
+    if (#args == 3) and (args[2] == 'scale') then
+        chains.settings.font_scale = args[3]:number();
+        print(chat.header(addon.name):append(chat.message('Font scale set to %s'):fmt(chains.settings.font_scale)));
     end
 
     if (#args == 4) and (args[2] == 'move') then
