@@ -20,7 +20,7 @@
 --SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 addon.author = 'Daniel_H, sippius(v4)';
 addon.name = 'rolltracker';
-addon.version = '1.0.2';
+addon.version = '1.0.2 (v3), 0.2 (v4)';
 
 last_roll = ""
 
@@ -316,24 +316,24 @@ local corsairRoll_Data = {
 }
 
 function GetEquipped(slot)
-    local inventory = AshitaCore:GetMemoryManager():GetInventory();
-    local equipment = inventory:GetEquippedItem(slot);
-    local index = equipment.ItemIndex;
+    local inventoryManager = AshitaCore:GetMemoryManager():GetInventory();
+    local equippedItem = inventoryManager:GetEquippedItem(slot);
+    local index = bit.band(equippedItem.Index, 0x00FF);
 
+    local eqEntry = {};
     if (index == 0 or index == nil) then
-        return 0;
+        eqEntry.Container = 0;
+        eqEntry.Item = nil;
+    else
+        eqEntry.Container = bit.band(equippedItem.Index, 0xFF00) / 256;
+        eqEntry.Item = inventoryManager:GetContainerItem(eqEntry.Container, index);
+        if (eqEntry.Item.Id == 0) or (eqEntry.Item.Count == 0) then
+            eqEntry.Item = nil;
+        end
     end
 
-    if (index < 2048) then
-        return inventory:GetItem(0, index).Id;
-    elseif (index < 2560) then
-        return inventory:GetItem(8, index - 2048).Id;
-    elseif (index < 2816) then
-        return inventory:GetItem(10, index - 2560).Id;
-    elseif (index < 3072) then
-        return inventory:GetItem(11, index - 2816).Id;
-    elseif (index < 3328) then
-        return inventory:GetItem(12, index - 3072).Id;
+    if (type(eqEntry) == 'table') and (eqEntry.Item ~= nil) then
+        return eqEntry.Item.Id
     else
         return 0;
     end
