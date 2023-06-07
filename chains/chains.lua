@@ -21,7 +21,7 @@
 
 addon.name     = 'chains';
 addon.author   = 'Sippius - Original Ashita-v3 skillchains by Ivaar';
-addon.version  = '0.7';
+addon.version  = '0.8';
 addon.desc     = 'Display current skillchain options.';
 
 require('common');
@@ -808,9 +808,9 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
         --=====================================================================
 
         -- exit if actor is not in alliance
-        --if not (isPlayerInAlliance(actor) or category == 13 and isPetInAlliance(actor)) then
-        --    return;
-        --end
+        if not (isPlayerInAlliance(actor) or isPetInAlliance(actor)) then
+            return;
+        end
 
         -- Check for valid action skill with valid added effect propery - after first setp
         if actionSkill and effectProperty then
