@@ -198,7 +198,10 @@ local MessageTypes = T{
 }
 
 local PetMessageTypes = T{
+    0,   -- '<pet> Readies <ability>.'
+    --185, -- '<pet> uses <ability> takes <amount> damage.'
     110, -- '<user> uses <ability>. <target> takes <amount> damage.'
+    -- 306, -- '<player> uses <ability>. <pet> recovers <amount> damage.'
     317  -- 'The <player> uses .. <target> takes .. points of damage.'
 };
 
@@ -752,7 +755,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
         [7] = 'Weapon Skill start',
         [8] = 'Casting start',
         [9] = 'Item start',
-        [11] = 'NPC TP finish',
+        [11] = 'NPC/BstPet TP finish',
         [12] = 'Ranged attack start',
         [13] = 'Avatar TP finish',
         [14] = 'Job Ability DNC',
@@ -771,9 +774,11 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
         -- Only the primary target and action are parsed assuming that is all that apply
         local actor = actionPacket.UserId;
         local target = actionPacket.Targets[1];
-
+        -- exit if actor is not in alliance
+        if not (isPlayerInAlliance(actor) or isPetInAlliance(actor)) then
+            return;
         -- exit if target is nil due to corrupted packet
-        if not target then
+        elseif not target then
             return;
         end
 
@@ -788,7 +793,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
         local effectProperty = targetAction.AdditionalEffect and SkillPropNames[bit.band(targetAction.AdditionalEffect.Damage,0x3F)];
 
         --debug ===============================================================
-        if chains.debug and T{ 3, 6, 13, 14 }:contains(actionPacket.Type) then
+        if chains.debug and T{ 3, 6, 11, 13, 14 }:contains(actionPacket.Type) then
             local out = ('Type: %s -> %s, Id: %s'):fmt(actionPacket.Type, category, actionPacket.Id);
             if actionSkill then
                 out = out .. (' Skill: %s'):fmt(actionSkill.en);
@@ -807,10 +812,6 @@ ashita.events.register('packet_in', 'packet_in_cb', function (e)
         end
         --=====================================================================
 
-        -- exit if actor is not in alliance
-        if not (isPlayerInAlliance(actor) or isPetInAlliance(actor)) then
-            return;
-        end
 
         -- Check for valid action skill with valid added effect propery - after first setp
         if actionSkill and effectProperty then
